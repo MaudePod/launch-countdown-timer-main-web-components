@@ -1,0 +1,48 @@
+:root {
+    /* Primary */
+
+    --grayish-blue: hsl(237, 18%, 59%);
+    --soft-red: hsl(345, 95%, 68%);
+
+    /* Neutral */
+
+    --white: hsl(0, 0%, 100%);
+    --dark-desaturated-blue: hsl(236, 21%, 26%);
+    --very-dark-blue: hsl(235, 16%, 14%);
+    --very-dark-mostly-black-blue: hsl(234, 17%, 12%);
+}
+
+body {
+    display: grid;
+    height: 100svh;
+    width: 100svw;
+    margin: 0;
+    background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue), var(--very-dark-blue));
+    background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue) 40%, #2F2439) 40%;
+}
+
+main {
+    display: grid;
+    height: 100svh;
+    width: 100svw;
+    margin: 0;
+    background-image: url(./images/bg-stars.svg), url(./images/pattern-hills.svg);
+    background-repeat: no-repeat, no-repeat;
+    background-size: 100svw 80svh, 100svw 20svh;
+    background-position: top, bottom;
+    place-items: center;
+}
+
+h1 {
+    color: var(--white);
+    font-size: 3em;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+}
+
+
+section[class="social"]{
+    display: flex;
+    gap: 10px;    
+}
+
