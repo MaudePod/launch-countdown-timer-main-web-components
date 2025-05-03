@@ -1,11 +1,15 @@
+import { DateTime } from './luxon/luxon.min.js';
+
 const template = document.createElement("template");
 template.innerHTML = `
       <section class="card">
           <section class="card-body">
             <section class="card-body-background-top">
+            </section>
+              <section class="time"></section>
+            <section class="card-body-background-bottom">
               <section class="time"></section>
             </section>
-            <section class="card-body-background-bottom"></section>
             <section class="left-gap">
             </section>
             <section class="right-gap"></section>
@@ -31,32 +35,55 @@ template.innerHTML = `
           }
          
           :host([time-unit="second"]) {
-            --time: 1s;
-
             section[class="card-footer"]::after {
               content: "SECONDS";
             }
+            section[class="card-body-background-top"] {
+              display: grid;
+              height: 100cqh;
+              width: 100cqw;
+              top: -50cqh;
+              background-color: var(--dark-desaturated-blue);
+              position: absolute;
+              animation-name: note-flip;
+              animation-duration: 1s;
+              animation-iteration-count: infinite;
+              border-radius: 10px;
+              border-bottom: 2px solid var(--very-dark-blue);
+              filter: brightness(0.8);
+            }
+          }
+
+          :host([flip-page]) {
+            section[class="card-body-background-top"] {
+            display: grid;
+            height: 100cqh;
+            width: 100cqw;
+            top: -50cqh;
+            background-color: var(--dark-desaturated-blue);
+            position: absolute;
+            animation-name: note-flip;
+            animation-duration: 1s;
+             animation-iteration-count: 1;
+            border-radius: 10px;
+            border-bottom: 2px solid var(--very-dark-blue);
+            filter: brightness(0.8);
+          }  
           }
 
           :host([time-unit="minute"]) {
-            --time: 60s;
-
             section[class="card-footer"]::after {
               content: "MINUTES";
             }
           }
 
           :host([time-unit="hour"]) {
-            --time: 3600s;
-
             section[class="card-footer"]::after {
               content: "HOURS";
             }
           }
 
           :host([time-unit="day"]) {
-            --time: 86400s;
-
             section[class="card-footer"]::after {
               content: "DAYS";
             }
@@ -86,9 +113,6 @@ template.innerHTML = `
             top: -50cqh;
             background-color: var(--dark-desaturated-blue);
             position: absolute;
-            animation-name: note-flip;
-            animation-duration: var(--time);
-            animation-iteration-count: infinite;
             border-radius: 10px;
             border-bottom: 2px solid var(--very-dark-blue);
             filter: brightness(0.8);
@@ -149,67 +173,115 @@ template.innerHTML = `
           section[class="time"] {
             z-index: 1;
           }
+
+          @container  (inline-size < 1000px) {
+            section[class="card"] {
+              width:100%;
+            }
+          }
         </style>
 
 `;
 export default class TimeCard extends HTMLElement {
-    #internals;
-    constructor() {
-        super();
-        this.#internals = this.attachInternals();
+  #internals;
+  #launchDate;
+  constructor() {
+    super();
+    this.#internals = this.attachInternals();
+  }
+  connectedCallback(
+  ) {
+    const shadowRoot = this.attachShadow({ mode: "open" })
+    shadowRoot.appendChild(template.content.cloneNode(true));
+    if (this.hasAttribute('launch-date')) {
+      this.#launchDate = DateTime.fromISO(this.getAttribute('launch-date'));
     }
-    connectedCallback(
-    ) {
-        const shadowRoot = this.attachShadow({ mode: "open" })
-        shadowRoot.appendChild(template.content.cloneNode(true));
-        if (this.hasAttribute('time-unit')) {
-            const timeUnit = this.getAttribute('time-unit');
-            console.log(timeUnit)
-            switch (timeUnit) {
-                case 'second':
-                    setInterval(() => {
-                        const second=new Date().getSeconds();
-                        this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = second;
-                        this.setAttribute('time',second);
-                    }, 1000);
-                    break;
+    if (this.hasAttribute('time-unit')) {
+      const timeUnit = this.getAttribute('time-unit');
+      const dateDifference = new Date(this.#launchDate) - new Date();
+      const startDate = this.#launchDate.diff(DateTime.now(), ["days", "hours", "minutes", 'seconds']).toObject();
+      const secondsToStart = Math.floor(startDate.seconds % 60) * 1000;
+      let start = 0;
+      switch (timeUnit) {
+        case 'second':
 
-                case 'minute':
-                    this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getMinutes();
-                    setInterval(() => {
-                        this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getMinutes();
-                    }, 60000);
-                    break;
+          setInterval(() => {
+            const timeToLaunch = this.#launchDate.diff(DateTime.now(), ['seconds']).toObject();
+            const seconds = Math.floor(timeToLaunch.seconds % 60);
+            this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = seconds;
+          }, 1000);
+          break;
 
-                case 'hour':
-                    this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getHours();
-                    setInterval(() => {
-                        this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getHours();
-                    }, 3600000);
-                    break;
+        case 'minute':
+          this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = startDate.minutes;
+          setTimeout(() => {
+            this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getMinutes();
+            setInterval(() => {
+              this.flipPage();
+              this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getMinutes();
+            }, 60000);
+          }, secondsToStart);
+          break;
 
-                case 'day':
-                    this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getDay();
-                    setInterval(() => {
-                        this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = new Date().getDay();
-                    }, 86400000);
-                    break;
+        case 'hour':
+          this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = startDate.hours;
+          setTimeout(() => {
+            this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getHours();
+            setInterval(() => {
+              this.flipPage();
+              this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getHours();
+            }, 3600000);
+          }, secondsToStart);
+          break;
 
-                default:
-                    break;
-            }
-        }
+        case 'day':
+          this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = startDate.days;
+          setTimeout(() => {
+            this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getDays();
+            setInterval(() => {
+              this.flipPage();
+              this.#internals.shadowRoot.querySelector('section[class="time"]').innerHTML = this.getDays();
+            }, 86400000);
+          }, secondsToStart);
 
+          break;
+
+        default:
+          break;
+      }
     }
 
-    static get observedAttributes() {
-        return [
-            'time-unit',
-            'start-date'
-        ];
-    }
+  }
+  getMinutes = () => {
+    const timeToLaunch = this.#launchDate.diff(DateTime.now(), ['minutes']).toObject();
+    const minutes = Math.floor(timeToLaunch.minutes % 60);
+    return minutes;
+  }
+  getHours = () => {
+    const timeToLaunch = this.#launchDate.diff(DateTime.now(), ['hours']).toObject();
+    const hours = Math.floor(timeToLaunch.hours % 24);
+    return hours;
+  }
+  getDays = () => {
+    const timeToLaunch = this.#launchDate.diff(DateTime.now(), ['days']).toObject();
+    const days = Math.floor(timeToLaunch.days);
+    return days;
+  }
+  flipPage = () => {
+    this.setAttribute('flip-page', "");
+    setTimeout(() => {
+      this.removeAttribute('flip-page');
+    }, 1000);
+  }
+  static get observedAttributes() {
+    return [
+      'time-unit',
+      'launch-date',
+      'time'
+    ];
+  }
 }
 
 if (!customElements.get("time-card")) {
-    customElements.define("time-card", TimeCard);
+  customElements.define("time-card", TimeCard);
 } 

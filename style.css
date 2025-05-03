@@ -17,6 +17,7 @@ body {
     height: 100svh;
     width: 100svw;
     margin: 0;
+    container: body / inline-size;
     background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue), var(--very-dark-blue));
     background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue) 40%, #2F2439) 40%;
 }
