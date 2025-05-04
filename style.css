@@ -1,11 +1,9 @@
 :root {
     /* Primary */
-
     --grayish-blue: hsl(237, 18%, 59%);
     --soft-red: hsl(345, 95%, 68%);
 
     /* Neutral */
-
     --white: hsl(0, 0%, 100%);
     --dark-desaturated-blue: hsl(236, 21%, 26%);
     --very-dark-blue: hsl(235, 16%, 14%);
@@ -18,15 +16,14 @@ body {
     width: 100svw;
     margin: 0;
     container: body / inline-size;
-    background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue), var(--very-dark-blue));
     background: linear-gradient(to bottom, var(--very-dark-mostly-black-blue) 40%, #2F2439) 40%;
+    position: relative;
 }
 
 main {
     display: grid;
     height: 100svh;
     width: 100svw;
-    margin: 0;
     background-image: url(./images/bg-stars.svg), url(./images/pattern-hills.svg);
     background-repeat: no-repeat, no-repeat;
     background-size: 100svw 80svh, 100svw 20svh;
@@ -42,8 +39,31 @@ h1 {
 }
 
 
-section[class="social"]{
+section[class="social"] {
     display: flex;
-    gap: 10px;    
+    gap: 40px;
 }
 
+svg {
+    fill: #8385A9;
+    cursor: pointer;
+}
+
+svg:hover,
+a:focus svg {
+    fill: var(--soft-red);
+}
+
+div[class="attribution"] {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    color: var(--grayish-blue);
+}
+
+@container (inline-size <1000px) {
+    h1 {
+        font-size: 1em;
+    }
+}
