@@ -1,2 +1,1 @@
-import CountdownComponent from "./scripts/CountdownComponent.js";
-
+import TimeCard from "./scripts/TimeCard.js";
